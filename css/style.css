@@ -803,3 +803,50 @@ main {
     cursor: pointer;
     color: var(--color-navy);
 }
+
+/* Google Translate Custom Styling */
+#google_translate_element {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.goog-te-gadget-simple {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-family: 'DM Sans', sans-serif !important;
+    cursor: pointer !important;
+}
+
+.goog-te-gadget-simple span {
+    color: white !important;
+}
+
+.goog-te-gadget-simple:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.goog-te-menu-value span {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.goog-te-menu-value img {
+    display: none !important;
+}
+
+/* Footer Button Hover */
+#run-audit-btn:hover {
+    background: #333 !important;
+    color: white !important;
+    border-color: #333 !important;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+

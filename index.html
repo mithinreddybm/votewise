@@ -13,36 +13,33 @@
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' 'unsafe-inline' 'unsafe-eval'
-            https://accounts.google.com
-            https://maps.googleapis.com
-            https://translate.google.com
-            https://translate.googleapis.com
-            https://translate-pa.googleapis.com;
+            https://*.google.com
+            https://*.googleapis.com
+            https://*.gstatic.com;
         style-src 'self' 'unsafe-inline'
+            https://*.google.com
+            https://*.googleapis.com
+            https://*.gstatic.com
             https://fonts.googleapis.com
-            https://cdnjs.cloudflare.com
-            https://translate.googleapis.com;
+            https://cdnjs.cloudflare.com;
         font-src 'self'
             https://fonts.gstatic.com
             https://cdnjs.cloudflare.com;
         img-src 'self' data: blob:
+            https://*.google.com
             https://*.googleapis.com
             https://*.gstatic.com
-            https://*.google.com
             https://*.googleusercontent.com
-            https://maps.google.com
             https://i.ytimg.com;
         connect-src 'self'
-            https://generativelanguage.googleapis.com
+            https://*.google.com
+            https://*.googleapis.com
             https://*.aiplatform.googleapis.com
-            https://maps.googleapis.com
-            https://translate.googleapis.com
             https://www.google-analytics.com
             https://www.googletagmanager.com;
         frame-src
-            https://accounts.google.com
-            https://translate.google.com
-            https://www.youtube.com;
+            https://*.google.com
+            https://*.youtube.com;
     ">
 
     <!-- Open Graph / Social Sharing -->
@@ -226,17 +223,21 @@
             </section>
         </main>
 
-        <footer role="contentinfo" style="text-align:center;padding:30px 20px;color:#666;font-size:0.85rem;">
-            <p>VoteWise © 2024 | Built with
-                <strong>Google Gemini</strong>,
-                <strong>Google Maps</strong>,
-                <strong>Google Identity Services</strong>,
-                <strong>Google Fonts</strong>,
-                <strong>Google Translate</strong>, and
-                <strong>Google Analytics</strong>
-            </p>
-            <p style="margin-top:8px;">For official voter information, visit <a href="https://voters.eci.gov.in" target="_blank" rel="noopener noreferrer">voters.eci.gov.in</a></p>
-            <button id="run-audit-btn" style="margin-top:15px; background:none; border:1px solid #ccc; color:#888; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:0.75rem;">Run Quality Audit (v1.2.0)</button>
+        <footer role="contentinfo" style="text-align:center;padding:40px 20px;color:#666;font-size:0.85rem; background: #f8f9fa; border-top: 1px solid #eee;">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <p style="line-height: 1.6;">VoteWise © 2024 | Built with
+                    <strong>Google Gemini</strong>,
+                    <strong>Google Maps</strong>,
+                    <strong>Google Identity Services</strong>,
+                    <strong>Google Fonts</strong>,
+                    <strong>Google Translate</strong>, and
+                    <strong>Google Analytics</strong>
+                </p>
+                <p style="margin-top:12px;">For official voter information, visit <a href="https://voters.eci.gov.in" target="_blank" rel="noopener noreferrer" style="color: var(--color-navy); font-weight: 600;">voters.eci.gov.in</a></p>
+                <div style="margin-top:20px;">
+                    <button id="run-audit-btn" style="background:none; border:1px solid #ccc; color:#888; padding:6px 16px; border-radius:20px; cursor:pointer; font-size:0.75rem; transition: all 0.2s;">Run Quality Audit (v1.2.0)</button>
+                </div>
+            </div>
         </footer>
     </div>
 
@@ -253,12 +254,12 @@
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
                 pageLanguage: 'en',
-                includedLanguages: 'hi,ta,te,kn,ml,bn,mr,gu,pa',
+                includedLanguages: 'hi,bn,te,mr,ta,ur,gu,kn,or,ml,pa,as,mai,sa,doi,kok,ks,mni,ne,sd,sat,brx',
                 layout: google.translate.TranslateElement.InlineLayout.SIMPLE
             }, 'google_translate_element');
         }
     </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <!-- Main Application Script -->
     <script type="module" src="js/app.js"></script>
