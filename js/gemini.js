@@ -65,6 +65,10 @@ class Gemini {
         this.chatInput = document.getElementById('chat-input');
         /** @type {HTMLButtonElement} Send button */
         this.sendBtn = document.getElementById('send-btn');
+        /** @type {HTMLElement} Typing indicator dots */
+        this.dots = document.getElementById('typing-dots');
+        /** @type {HTMLElement} Speak button */
+        this.speakBtn = document.getElementById('speak-btn');
         /** @type {NodeList} Quick reply buttons */
         this.quickBtns = document.querySelectorAll('.quick-btn');
 
@@ -93,10 +97,15 @@ class Gemini {
     init() {
         if (!this.sendBtn || !this.chatInput) return;
 
-        this.sendBtn.addEventListener('click', () => this.handleUserMessage());
-        this.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleUserMessage();
-        });
+        if (this.sendBtn) this.sendBtn.addEventListener('click', () => this.handleUserMessage());
+        if (this.chatInput) {
+            this.chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.handleUserMessage();
+            });
+        }
+        if (this.speakBtn) {
+            this.speakBtn.addEventListener('click', () => this._speakLastResponse());
+        }
 
         this.quickBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -407,6 +416,38 @@ class Gemini {
         if (this.chatMessages) {
             this.chatMessages.innerHTML = '<div class="message ai">Namaste! I am your VoteWise AI assistant. How can I help you today?</div>';
         }
+    }
+    /**
+     * Speaks the last AI response using Web Speech API (Google TTS).
+     * @private
+     */
+    _speakLastResponse() {
+        if (!('speechSynthesis' in window)) {
+            console.warn('Speech synthesis not supported');
+            return;
+        }
+
+        // Find last AI message
+        const aiMessages = this.history.filter(m => m.sender === 'ai');
+        if (aiMessages.length === 0) return;
+        
+        const lastMsg = aiMessages[aiMessages.length - 1].text;
+        
+        // Stop any current speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(lastMsg);
+        
+        // Try to find a Google Indian English or Hindi voice
+        const voices = window.speechSynthesis.getVoices();
+        const googleVoice = voices.find(v => v.name.includes('Google') && (v.lang.includes('en-IN') || v.lang.includes('hi-IN')));
+        if (googleVoice) utterance.voice = googleVoice;
+        
+        utterance.rate = 0.9; // Slightly slower for clarity
+        utterance.pitch = 1.0;
+        
+        window.speechSynthesis.speak(utterance);
+        analytics.trackGoogleServiceUsage('Web Speech API', 'text_to_speech');
     }
 }
 

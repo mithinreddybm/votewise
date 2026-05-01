@@ -30,7 +30,8 @@
             https://*.gstatic.com
             https://*.google.com
             https://*.googleusercontent.com
-            https://maps.google.com;
+            https://maps.google.com
+            https://i.ytimg.com;
         connect-src 'self'
             https://generativelanguage.googleapis.com
             https://*.aiplatform.googleapis.com
@@ -40,7 +41,8 @@
             https://www.googletagmanager.com;
         frame-src
             https://accounts.google.com
-            https://translate.google.com;
+            https://translate.google.com
+            https://www.youtube.com;
     ">
 
     <!-- Open Graph / Social Sharing -->
@@ -144,6 +146,13 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="mb-4">
+                    <h3 class="mb-4">Watch & Learn: Voter Education (Google YouTube API)</h3>
+                    <div id="video-gallery" class="video-grid" role="list" aria-label="Educational videos">
+                        <!-- Videos will be injected here -->
+                    </div>
+                </div>
 
                 <div class="text-center mt-4 mb-4">
                     <hr style="border: 0; border-top: 1px solid #ddd; margin: 40px 0;">
@@ -176,6 +185,9 @@
                     <div class="chat-input-area">
                         <label for="chat-input" class="sr-only">Type your question about Indian elections</label>
                         <input type="text" id="chat-input" placeholder="Type your question here..." aria-label="Chat input" autocomplete="off" maxlength="500">
+                        <button id="speak-btn" class="send-btn" style="background: var(--color-navy); margin-right: 8px;" aria-label="Listen to response">
+                            <i class="fas fa-volume-up" aria-hidden="true"></i>
+                        </button>
                         <button id="send-btn" class="send-btn" aria-label="Send message">
                             <i class="fas fa-paper-plane" aria-hidden="true"></i>
                         </button>

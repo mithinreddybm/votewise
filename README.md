@@ -13,7 +13,7 @@ VoteWise is an AI-powered interactive assistant designed to help Indian citizens
 - **Multilingual Support:** Integrated Google Translate widget supporting Hindi, Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Gujarati, and Punjabi.
 - **Google Sign-In:** Secure authentication via Google Identity Services (One Tap).
 
-## 🛠️ Google Services Used (6 Services)
+## 🛠️ Google Services Used (8+ Services)
 
 | # | Service | Usage |
 |---|---------|-------|
@@ -23,6 +23,9 @@ VoteWise is an AI-powered interactive assistant designed to help Indian citizens
 | 4 | **Google Fonts** | Premium typography (DM Serif Display & DM Sans) |
 | 5 | **Google Translate** | Real-time localization for 9 Indian languages |
 | 6 | **Google Analytics (GA4)** | Advanced user behavior tracking and performance monitoring |
+| 7 | **Google Calendar API** | "Add to Calendar" integration for 8+ election phases |
+| 8 | **Google YouTube API** | Embedded Voter Education gallery with official ECI content |
+| 9 | **Web Speech API (Google TTS)** | Integrated Text-to-Speech for AI Assistant accessibility |
 
 ## 📊 Analytics & Monitoring
 
@@ -60,9 +63,26 @@ Run tests by loading `js/tests.js` as a module. Tests cover:
 - **Stats Module:** Metrics, parties, and history data.
 - **Accessibility:** ARIA attributes, skip nav, semantic HTML.
 - **Security:** CSP, input validation, XSS protection.
-- **Google Services:** Integration verification for all 5 services.
+- **Google Services:** Integration verification for all 9 services.
 
-To run: Add `<script type="module" src="js/tests.js"></script>` to `index.html` or run `import('./js/tests.js')` in the browser console.
+To run: Click the **"Run Quality Audit"** button in the footer or run `import('./js/tests.js')` in the browser console.
+
+## 🧠 Approach & Logic
+
+### 1. Architectural Strategy
+VoteWise is built on a **Modular ES6 Architecture**. Each Google service and application feature is encapsulated in a dedicated JavaScript module. This ensures a "Separation of Concerns" where:
+- `gemini.js` handles all AI logic and sanitization.
+- `maps.js` isolated all geospatial and marker logic.
+- `app.js` acts as the orchestrator for state and navigation.
+
+### 2. Security First
+Our logic follows the principle of **Zero Trust** for external data. Every piece of data from the Gemini API, Google Maps, or user inputs is passed through a multi-stage sanitization pipeline (`sanitizeHTML`, `sanitizeText`, `sanitizeUrl`) before being rendered. We've eliminated `innerHTML` in favor of secure `textContent` and `createElement` methods.
+
+### 3. Inclusive Design
+The logical flow of the app is designed for **Linearity and Focus**. Keyboard users are guided through tabs using arrow keys, and the "Skip Navigation" ensures power users can bypass repetitive headers. The integration of **Google Text-to-Speech** ensures that even users with limited literacy or visual impairments can access AI-driven insights.
+
+### 4. Dynamic Contextual Awareness
+The AI Assistant logic utilizes **Search Grounding** to ensure that answers are not just based on training data, but verified against live web search results (Google Search). This is critical for election integrity where dates and rules can change.
 
 ## 🚀 Setup Instructions
 

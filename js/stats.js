@@ -47,6 +47,13 @@ class ElectionStats {
             { year: "2024", term: "18th Lok Sabha", winner: "NDA", pm: "Narendra Modi" },
             { year: "2029", term: "19th Lok Sabha", winner: "Future", pm: "TBD" }
         ];
+
+        /** @type {Array<Object>} YouTube Voter Education videos */
+        this.videos = [
+            { id: "I0_2gwe0vGA", title: "Step-by-Step Polling Guide" },
+            { id: "ZJReQ8ao0SU", title: "Know Your EVM & VVPAT" },
+            { id: "BJCjsgEiQwg", title: "How to Register to Vote" }
+        ];
     }
 
     /**
@@ -56,6 +63,7 @@ class ElectionStats {
         this._renderMetrics();
         this._renderParties();
         this._renderHistory();
+        this._renderVideos();
     }
 
     /**
@@ -159,6 +167,40 @@ class ElectionStats {
             details.append(term, br, summary);
             item.append(year, details);
             this.timelineContainer.appendChild(item);
+        });
+    }
+    /**
+     * Renders YouTube voter education videos.
+     * @private
+     */
+    _renderVideos() {
+        const videoContainer = document.getElementById('video-gallery');
+        if (!videoContainer) return;
+        
+        videoContainer.innerHTML = '';
+        this.videos.forEach(v => {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.setAttribute('role', 'listitem');
+            card.style.cssText = 'background: white; padding: 15px; border-radius: 16px; box-shadow: var(--shadow-soft);';
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${v.id}`;
+            iframe.title = v.title;
+            iframe.setAttribute('frameborder', '0');
+            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+            iframe.setAttribute('allowfullscreen', 'true');
+            iframe.style.width = '100%';
+            iframe.style.borderRadius = '12px';
+            iframe.style.aspectRatio = '16/9';
+
+            const title = document.createElement('p');
+            title.style.marginTop = '10px';
+            title.style.fontWeight = '500';
+            title.textContent = v.title;
+
+            card.append(iframe, title);
+            videoContainer.appendChild(card);
         });
     }
 }

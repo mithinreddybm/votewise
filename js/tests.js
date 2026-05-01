@@ -108,7 +108,29 @@ async function runTests() {
     await t.group('Integration Flow: Analytics & Google Services', async () => {
         const { analytics } = await import('./analytics.js');
         t.assertTruthy(analytics.isInitialized, 'Google Analytics initialized on app start');
-        t.assert(document.querySelector('footer').textContent.includes('Google Analytics'), 'Analytics mentioned in footer');
+
+        // Test: Footer mentions Google Services
+        const footer = document.querySelector('footer');
+        t.assertTruthy(footer, 'Footer element exists');
+        if (footer) {
+            const footerText = footer.textContent;
+            t.assertTruthy(footerText.includes('Google Gemini'), 'Footer mentions Google Gemini');
+            t.assertTruthy(footerText.includes('Google Maps'), 'Footer mentions Google Maps');
+            t.assertTruthy(footerText.includes('Google Analytics'), 'Footer mentions Google Analytics');
+        }
+
+        // Test: YouTube Integration
+        const videos = document.querySelectorAll('#video-gallery iframe');
+        t.assert(videos.length > 0, 'YouTube voter education videos are embedded');
+
+        // Test: Calendar Integration
+        // Open a modal to check for the calendar button
+        const firstStep = document.querySelector('.timeline-content');
+        if (firstStep) firstStep.click();
+        const calBtn = document.querySelector('a[href*="calendar.google.com"]');
+        t.assertTruthy(calBtn, 'Google Calendar "Add to Calendar" button exists in timeline details');
+        const modal = document.getElementById('details-modal');
+        if (modal) modal.style.display = 'none'; // Close it back
     });
 
     await t.group('Accessibility Compliance (WCAG 2.1)', async () => {

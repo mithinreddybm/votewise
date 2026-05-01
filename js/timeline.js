@@ -25,7 +25,9 @@ class Timeline {
                 badgeClass: "badge-saffron",
                 description: "The Election Commission of India (ECI) announces the election schedule. The Model Code of Conduct (MCC) comes into force immediately.",
                 details: "The MCC ensures fair play and prevents the ruling party from using government resources for campaigning. It applies to candidates, political parties, and governments.",
-                legal: "Article 324 of the Constitution, MCC Guidelines by ECI."
+                legal: "Article 324 of the Constitution, MCC Guidelines by ECI.",
+                calTitle: "Election Announcement & MCC Commencement",
+                calDate: "20240316"
             },
             {
                 title: "Voter Roll Revision",
@@ -34,7 +36,9 @@ class Timeline {
                 badgeClass: "badge-navy",
                 description: "Continuous update of electoral rolls where citizens can register or update their details.",
                 details: "Eligible citizens (18+) can apply for inclusion in the electoral roll via Form 6. This process continues until the last date of nominations.",
-                legal: "Representation of the People Act, 1950."
+                legal: "Representation of the People Act, 1950.",
+                calTitle: "Voter Registration Deadline",
+                calDate: "20240401"
             },
             {
                 title: "Nomination Filing",
@@ -43,7 +47,9 @@ class Timeline {
                 badgeClass: "badge-green",
                 description: "Candidates file their nomination papers and security deposits with the Returning Officer.",
                 details: "Candidates must disclose their assets, liabilities, educational qualifications, and criminal antecedents in an affidavit (Form 26).",
-                legal: "Section 33 of the Representation of the People Act, 1951."
+                legal: "Section 33 of the Representation of the People Act, 1951.",
+                calTitle: "Nomination Filing Window",
+                calDate: "20240320"
             },
             {
                 title: "Scrutiny and Withdrawal",
@@ -52,7 +58,9 @@ class Timeline {
                 badgeClass: "badge-navy",
                 description: "Returning Officers scrutinize nominations and candidates can withdraw their names.",
                 details: "Invalid nominations are rejected. Candidates have a window of two days after scrutiny to withdraw their candidacy if they choose.",
-                legal: "Sections 36 and 37 of the RP Act, 1951."
+                legal: "Sections 36 and 37 of the RP Act, 1951.",
+                calTitle: "Nomination Scrutiny Day",
+                calDate: "20240328"
             },
             {
                 title: "Campaign Period",
@@ -61,7 +69,9 @@ class Timeline {
                 badgeClass: "badge-saffron",
                 description: "Active campaigning by political parties and candidates to reach out to voters.",
                 details: "Parties release manifestos and hold rallies. ECI monitors campaign spending and adherence to MCC.",
-                legal: "ECI Expenditure Monitoring Guidelines."
+                legal: "ECI Expenditure Monitoring Guidelines.",
+                calTitle: "Election Campaign Period",
+                calDate: "20240401"
             },
             {
                 title: "Campaign Silence",
@@ -70,7 +80,9 @@ class Timeline {
                 badgeClass: "badge-navy",
                 description: "All forms of public campaigning must stop 48 hours before the conclusion of polling.",
                 details: "This period allows voters to reflect and decide without external influence or noise. Media coverage of rallies is also restricted.",
-                legal: "Section 126 of the Representation of the People Act, 1951."
+                legal: "Section 126 of the Representation of the People Act, 1951.",
+                calTitle: "Election Campaign Silence Starts",
+                calDate: "20240417"
             },
             {
                 title: "Polling Day (EVM + VVPAT)",
@@ -79,7 +91,9 @@ class Timeline {
                 badgeClass: "badge-green",
                 description: "Citizens cast their votes at designated polling booths using EVMs and VVPATs.",
                 details: "Electronic Voting Machines (EVM) are used for casting votes. Voter Verifiable Paper Audit Trail (VVPAT) prints a slip for 7 seconds to confirm the vote.",
-                legal: "Conduct of Elections Rules, 1961."
+                legal: "Conduct of Elections Rules, 1961.",
+                calTitle: "VOTING DAY - 18th Lok Sabha",
+                calDate: "20240419"
             },
             {
                 title: "Counting and Results",
@@ -88,7 +102,9 @@ class Timeline {
                 badgeClass: "badge-navy",
                 description: "Votes from all EVMs are counted under strict supervision, and results are declared.",
                 details: "VVPAT slips from 5 randomly selected polling stations per assembly segment are also counted to verify EVM results.",
-                legal: "Section 64 of the RP Act, 1951."
+                legal: "Section 64 of the RP Act, 1951.",
+                calTitle: "Election Counting Day & Results",
+                calDate: "20240604"
             }
         ];
     }
@@ -210,7 +226,7 @@ class Timeline {
         details.textContent = step.details;
 
         const legalBox = document.createElement('div');
-        legalBox.style.cssText = 'padding: 15px; background: var(--color-gray-light); border-radius: 8px; border-left: 4px solid var(--color-navy);';
+        legalBox.style.cssText = 'padding: 15px; background: var(--color-gray-light); border-radius: 8px; border-left: 4px solid var(--color-navy); margin-bottom: 20px;';
         
         const legalHeader = document.createElement('h4');
         legalHeader.style.cssText = 'margin-bottom: 5px; font-size: 0.9rem;';
@@ -221,7 +237,17 @@ class Timeline {
         legalText.textContent = step.legal;
 
         legalBox.append(legalHeader, legalText);
-        modalBody.append(badge, title, day, overviewHeader, desc, processHeader, details, legalBox);
+
+        // Google Calendar Button
+        const calBtn = document.createElement('a');
+        calBtn.className = 'search-btn';
+        calBtn.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; text-decoration: none; width: 100%; justify-content: center; background: #4285F4;';
+        calBtn.href = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(step.calTitle)}&details=${encodeURIComponent(step.description)}&dates=${step.calDate}T090000Z/${step.calDate}T180000Z`;
+        calBtn.target = '_blank';
+        calBtn.rel = 'noopener noreferrer';
+        calBtn.innerHTML = '<i class="far fa-calendar-plus"></i> Add to Google Calendar';
+
+        modalBody.append(badge, title, day, overviewHeader, desc, processHeader, details, legalBox, calBtn);
         
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
