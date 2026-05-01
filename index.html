@@ -57,18 +57,18 @@
             </div>
         </section>
 
-        <nav class="nav-tabs">
-            <button class="tab-btn active" data-tab="timeline">
-                <i class="fas fa-history"></i> Timeline
+        <nav class="nav-tabs" role="tablist">
+            <button class="tab-btn active" data-tab="timeline" role="tab" aria-selected="true" aria-controls="timeline" aria-label="View election timeline">
+                <i class="fas fa-history" aria-hidden="true"></i> Timeline
             </button>
-            <button class="tab-btn" data-tab="ai-chat">
-                <i class="fas fa-robot"></i> AI Assistant
+            <button class="tab-btn" data-tab="ai-chat" role="tab" aria-selected="false" aria-controls="ai-chat" aria-label="Open AI Assistant">
+                <i class="fas fa-robot" aria-hidden="true"></i> AI Assistant
             </button>
-            <button class="tab-btn" data-tab="booth-finder">
-                <i class="fas fa-map-marker-alt"></i> Find Booth
+            <button class="tab-btn" data-tab="booth-finder" role="tab" aria-selected="false" aria-controls="booth-finder" aria-label="Locate polling booth">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Find Booth
             </button>
-            <button class="tab-btn" data-tab="quiz">
-                <i class="fas fa-voter-card"></i> Civic Quiz
+            <button class="tab-btn" data-tab="quiz" role="tab" aria-selected="false" aria-controls="quiz" aria-label="Take civic quiz">
+                <i class="fas fa-voter-card" aria-hidden="true"></i> Civic Quiz
             </button>
         </nav>
 

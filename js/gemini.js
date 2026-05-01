@@ -11,9 +11,8 @@ class Gemini {
         this.sendBtn = document.getElementById('send-btn');
         this.quickBtns = document.querySelectorAll('.quick-btn');
         
-        // Using Gemini 2.0 Flash for Thinking and Search capabilities
         this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-        this.history = [];
+        this.history = this.loadHistory();
         this.systemPrompt = `You are a VoteWise AI Assistant, an expert in Indian elections. 
         Your goal is to help citizens understand the voting process, ECI rules, EVM/VVPAT, voter registration, Model Code of Conduct, and Lok Sabha/Vidhan Sabha processes.
         Use your Google Search tool to verify real-time facts about current candidate lists, polling dates, and results.
@@ -41,6 +40,44 @@ class Gemini {
                 this.handleUserMessage();
             });
         });
+
+        // Render history if exists
+        if (this.history.length > 0) {
+            this.renderHistory();
+        }
+    }
+
+    /**
+     * Loads chat history from localStorage.
+     */
+    loadHistory() {
+        try {
+            const saved = localStorage.getItem('votewise_chat_history');
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            console.error('Failed to load history:', e);
+            return [];
+        }
+    }
+
+    /**
+     * Saves chat history to localStorage.
+     */
+    saveHistory() {
+        try {
+            localStorage.setItem('votewise_chat_history', JSON.stringify(this.history));
+        } catch (e) {
+            console.error('Failed to save history:', e);
+        }
+    }
+
+    /**
+     * Renders saved history to the UI.
+     */
+    renderHistory() {
+        this.history.forEach(msg => {
+            this.addMessage(msg.text, msg.sender, msg.thought);
+        });
     }
 
     /**
@@ -52,12 +89,28 @@ class Gemini {
 
         this.chatInput.value = '';
         this.addMessage(text, 'user');
+        
+        // Update history
+        this.history.push({ text, sender: 'user', timestamp: Date.now() });
+        this.saveHistory();
+
         const typingId = this.showTyping();
 
         try {
-            const response = await this.callGemini(text);
+            const responseData = await this.callGemini(text);
             this.removeTyping(typingId);
-            this.addMessage(response, 'ai');
+            
+            this.addMessage(responseData.text, 'ai', responseData.thought);
+            
+            // Update history
+            this.history.push({ 
+                text: responseData.text, 
+                sender: 'ai', 
+                thought: responseData.thought,
+                timestamp: Date.now() 
+            });
+            this.saveHistory();
+
         } catch (error) {
             console.error('Gemini error:', error);
             this.removeTyping(typingId);
@@ -74,7 +127,7 @@ class Gemini {
     /**
      * Calls the Gemini API with support for both AI Studio and Vertex AI.
      * @param {string} prompt - User's prompt.
-     * @returns {Promise<string>} AI response.
+     * @returns {Promise<Object>} AI response text and thought.
      */
     async callGemini(prompt) {
         const apiKey = config.get('GEMINI_API_KEY');
@@ -88,12 +141,9 @@ class Gemini {
         let headers = { 'Content-Type': 'application/json' };
 
         if (isVertex) {
-            // Vertex AI Endpoint
-            if (!projectId) throw new Error('GCP_PROJECT_ID is required for Vertex AI tokens');
             url = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/gemini-2.0-flash:streamGenerateContent`;
             headers['Authorization'] = `Bearer ${apiKey}`;
         } else {
-            // AI Studio Endpoint
             url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
         }
 
@@ -126,10 +176,7 @@ class Gemini {
             throw new Error(err.error?.message || (Array.isArray(err) ? err[0].error.message : 'API Call Failed'));
         }
 
-        // Handle both streaming (Vertex) and non-streaming (AI Studio) responses
         const data = await response.json();
-        
-        // If Vertex AI stream, it returns an array of chunks
         const candidates = isVertex ? data[0].candidates : data.candidates;
         const parts = candidates[0].content.parts;
         
@@ -141,17 +188,22 @@ class Gemini {
             if (part.text) aiText += part.text;
         });
 
-        if (thoughtProcess) {
-            console.log("%c AI Reasoning Path:", "color: #1a237e; font-weight: bold;", thoughtProcess);
-        }
-
-        return aiText || "I processed your request but couldn't generate a text response.";
+        return {
+            text: aiText || "I processed your request but couldn't generate a text response.",
+            thought: thoughtProcess
+        };
     }
 
     /**
      * Adds a message to the chat UI.
+     * @param {string} text - Message text.
+     * @param {string} sender - 'user' or 'ai'.
+     * @param {string} [thought] - Optional reasoning path.
      */
-    addMessage(text, sender) {
+    addMessage(text, sender, thought = '') {
+        const msgWrapper = document.createElement('div');
+        msgWrapper.className = `message-wrapper ${sender}`;
+
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${sender}`;
         
@@ -161,7 +213,20 @@ class Gemini {
             .replace(/\n/g, '<br>');
             
         msgDiv.innerHTML = formattedText;
-        this.chatMessages.appendChild(msgDiv);
+
+        // Add Thought/Reasoning Path for AI messages
+        if (sender === 'ai' && thought) {
+            const thoughtDetails = document.createElement('details');
+            thoughtDetails.className = 'thought-process';
+            thoughtDetails.innerHTML = `
+                <summary><i class="fas fa-brain"></i> View AI Reasoning</summary>
+                <div class="thought-content">${thought.replace(/\n/g, '<br>')}</div>
+            `;
+            msgDiv.prepend(thoughtDetails);
+        }
+
+        msgWrapper.appendChild(msgDiv);
+        this.chatMessages.appendChild(msgWrapper);
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
@@ -192,6 +257,7 @@ class Gemini {
         if (el) el.remove();
     }
 }
+
 
 export const gemini = new Gemini();
 export default gemini;

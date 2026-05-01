@@ -31,13 +31,69 @@ class Maps {
         }
 
         this.loadGoogleMapsScript(apiKey);
-        
+        this.setupEventListeners();
+    }
+
+    /**
+     * Sets up UI event listeners.
+     */
+    setupEventListeners() {
         if (this.searchBtn) {
             this.searchBtn.addEventListener('click', () => this.searchAddress());
             this.searchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') this.searchAddress();
             });
         }
+
+        // Add Locate Me button dynamically if it doesn't exist
+        const searchBox = document.querySelector('.search-box');
+        if (searchBox && !document.getElementById('locate-me-btn')) {
+            const locateBtn = document.createElement('button');
+            locateBtn.id = 'locate-me-btn';
+            locateBtn.className = 'locate-btn';
+            locateBtn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+            locateBtn.title = 'Use My Location';
+            locateBtn.addEventListener('click', () => this.useCurrentLocation());
+            searchBox.appendChild(locateBtn);
+        }
+    }
+
+    /**
+     * Uses browser geolocation to find the user.
+     */
+    useCurrentLocation() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+
+        const locateBtn = document.getElementById('locate-me-btn');
+        locateBtn.classList.add('loading');
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                this.map.setCenter(pos);
+                this.map.setZoom(15);
+                
+                new google.maps.Marker({
+                    position: pos,
+                    map: this.map,
+                    title: "You are here",
+                    animation: google.maps.Animation.BOUNCE
+                });
+
+                this.addMockBooths(new google.maps.LatLng(pos.lat, pos.lng));
+                locateBtn.classList.remove('loading');
+            },
+            () => {
+                alert('Error: The Geolocation service failed.');
+                locateBtn.classList.remove('loading');
+            }
+        );
     }
 
     /**
@@ -64,6 +120,9 @@ class Maps {
         this.map = new google.maps.Map(this.mapContainer, {
             center: defaultLocation,
             zoom: 5,
+            mapId: 'VOTEWISE_MAP_ID', // For Advanced Markers
+            disableDefaultUI: false,
+            zoomControl: true,
             styles: [
                 {
                     "featureType": "poi.business",
@@ -143,6 +202,7 @@ class Maps {
         }
     }
 }
+
 
 export const maps = new Maps();
 export default maps;
