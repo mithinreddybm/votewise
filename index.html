@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoteWise | AI-Powered Indian Election Guide</title>
+    <meta name="description" content="VoteWise is an interactive assistant helping Indian citizens understand the election process, timelines, and find polling booths using AI and Maps.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Screen Overlay -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="logo-icon" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 20px auto;">V</div>
+            <h2>Welcome to VoteWise</h2>
+            <p>Please sign in with your Google account to access the election assistant and tools.</p>
+            <div id="login-button-container" class="mt-4"></div>
+        </div>
+    </div>
+
+    <!-- Main App Shell (Hidden until login) -->
+    <div id="app-shell" class="hidden">
+        <header>
+            <div class="container">
+                <div class="logo">
+                    <div class="logo-icon">V</div>
+                    <h1>VoteWise</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="user-profile"></div>
+                    <div id="google_translate_element"></div>
+                </div>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Empowering Every Indian Voter</h2>
+                    <p>Navigate the world's largest democracy with AI-powered insights, real-time guides, and interactive tools.</p>
+                    <div class="hero-badges">
+                        <span><i class="fas fa-check-circle"></i> ECI Process Guide</span>
+                        <span><i class="fas fa-check-circle"></i> AI Assistance</span>
+                        <span><i class="fas fa-check-circle"></i> Booth Locator</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="timeline">
+                <i class="fas fa-history"></i> Timeline
+            </button>
+            <button class="tab-btn" data-tab="ai-chat">
+                <i class="fas fa-robot"></i> AI Assistant
+            </button>
+            <button class="tab-btn" data-tab="booth-finder">
+                <i class="fas fa-map-marker-alt"></i> Find Booth
+            </button>
+            <button class="tab-btn" data-tab="quiz">
+                <i class="fas fa-voter-card"></i> Civic Quiz
+            </button>
+        </nav>
+
+        <main class="container">
+            <!-- Timeline Section -->
+            <section id="timeline" class="tab-content active">
+                <div class="text-center mb-4">
+                    <h2>India's 18th Lok Sabha at a Glance</h2>
+                    <p>Authentic data and metrics from the 2024 General Elections</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div id="election-stats-grid" class="stats-grid mb-4">
+                    <!-- Metrics will be injected here -->
+                </div>
+
+                <div class="overview-flex mb-4">
+                    <div class="flex-item">
+                        <h3 class="mb-4">Major Parties & Alliances</h3>
+                        <div id="parties-grid" class="parties-grid">
+                            <!-- Parties will be injected here -->
+                        </div>
+                    </div>
+                    <div class="flex-item">
+                        <h3 class="mb-4">Election History & Future</h3>
+                        <div id="history-timeline" class="history-timeline">
+                            <!-- History will be injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 mb-4">
+                    <hr style="border: 0; border-top: 1px solid #ddd; margin: 40px 0;">
+                    <h2>Full Election Process Timeline</h2>
+                    <p>Step-by-step journey of the Indian General Elections</p>
+                </div>
+                <div id="timeline-container" class="timeline">
+                    <!-- Timeline items will be injected here -->
+                </div>
+            </section>
+
+            <!-- AI Chat Section -->
+            <section id="ai-chat" class="tab-content">
+                <div class="text-center mb-4">
+                    <h2>AI Election Assistant</h2>
+                    <p>Ask anything about Indian elections, rules, and procedures</p>
+                </div>
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="message ai">
+                            Namaste! I am your VoteWise AI assistant. How can I help you today?
+                        </div>
+                    </div>
+                    <div class="quick-replies">
+                        <button class="quick-btn" data-query="How to register as a voter?">How to register?</button>
+                        <button class="quick-btn" data-query="What is EVM and VVPAT?">What is EVM/VVPAT?</button>
+                        <button class="quick-btn" data-query="Explain Model Code of Conduct">Model Code of Conduct</button>
+                        <button class="quick-btn" data-query="How are votes counted in India?">How are votes counted?</button>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type your question here..." aria-label="Chat input">
+                        <button id="send-btn" class="send-btn" aria-label="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Booth Finder Section -->
+            <section id="booth-finder" class="tab-content">
+                <div class="text-center mb-4">
+                    <h2>Find My Polling Booth</h2>
+                    <p>Enter your address or pincode to locate your designated polling station</p>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="booth-search" placeholder="Enter Address or Pincode (e.g. Bangalore 560001)" aria-label="Search booth">
+                    <button id="search-btn" class="search-btn">Find Booth</button>
+                </div>
+                <div id="map-container">
+                    <!-- Google Map will be injected here -->
+                </div>
+                <div class="text-center mt-4">
+                    <p><small>Note: Map data is for illustrative purposes. For official records, visit <a href="https://voters.eci.gov.in" target="_blank">voters.eci.gov.in</a></small></p>
+                </div>
+            </section>
+
+            <!-- Quiz Section -->
+            <section id="quiz" class="tab-content">
+                <div class="text-center mb-4">
+                    <h2>Civic Awareness Quiz</h2>
+                    <p>Test your knowledge of Indian election laws and processes</p>
+                </div>
+                <div id="quiz-app" class="quiz-container">
+                    <!-- Quiz content will be injected here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for details -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'hi,ta,te,kn,ml,bn,mr,gu,pa',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
