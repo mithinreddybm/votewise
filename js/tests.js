@@ -127,6 +127,10 @@ async function runTests() {
         // Open a modal to check for the calendar button
         const firstStep = document.querySelector('.timeline-content');
         if (firstStep) firstStep.click();
+        
+        // Wait for modal transition/rendering
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         const calBtn = document.querySelector('a[href*="calendar.google.com"]');
         t.assertTruthy(calBtn, 'Google Calendar "Add to Calendar" button exists in timeline details');
         const modal = document.getElementById('details-modal');

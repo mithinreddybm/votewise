@@ -77,22 +77,25 @@ class Config {
             return;
         }
 
+        if (typeof text !== 'string') return;
+        
         const lines = text.split('\n');
-        lines.forEach((line, lineNumber) => {
-            // Skip empty lines and comments
-            const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith('#')) return;
+        lines.forEach(line => {
+            // Support comments and empty lines
+            if (!line || line.startsWith('#')) return;
 
-            const equalsIndex = trimmed.indexOf('=');
-            if (equalsIndex === -1) return;
+            const eqIndex = line.indexOf('=');
+            if (eqIndex === -1) return;
 
-            const key = trimmed.substring(0, equalsIndex).trim();
-            const value = trimmed.substring(equalsIndex + 1).trim();
+            const key = line.substring(0, eqIndex).trim();
+            const value = line.substring(eqIndex + 1).trim();
 
-            if (Object.prototype.hasOwnProperty.call(DEFAULT_KEYS, key)) {
+            if (Object.prototype.hasOwnProperty.call(this.keys, key)) {
                 this.keys[key] = value;
             }
         });
+        
+        this.validate();
     }
 
     /**
