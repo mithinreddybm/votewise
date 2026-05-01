@@ -86,7 +86,8 @@
     --color-navy-light: #283593;
     --color-gray-light: #f5f5f5;
     --color-text: #333333;
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+    --shadow-hard: 0 8px 30px rgba(0,0,0,0.12);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -201,6 +202,39 @@ header .container {
     margin-right: 8px;
 }
 
+.hero-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.hero-btn {
+    padding: 12px 28px;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    font-size: 1rem;
+}
+
+.hero-btn.primary {
+    background: var(--color-saffron);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 153, 51, 0.3);
+}
+
+.hero-btn.secondary {
+    background: white;
+    color: var(--color-navy);
+}
+
+.hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hard);
+}
+
 /* Navigation Tabs */
 .nav-tabs {
     display: flex;
@@ -257,7 +291,7 @@ main {
 /* Timeline Styles */
 .timeline {
     position: relative;
-    max-width: 900px;
+    max-width: 600px;
     margin: 0 auto;
     padding: 40px 0;
 }
@@ -673,18 +707,15 @@ main {
     padding: 10px;
 }
 
-.dot {
-    width: 8px;
-    height: 8px;
-    background: #bbb;
+.typing .dot {
+    width: 6px;
+    height: 6px;
+    background: #ccc;
     border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out both;
+    animation: typing 1.4s infinite;
 }
 
-.dot:nth-child(1) { animation-delay: -0.32s; }
-.dot:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes bounce {
+@keyframes typing {
     0%, 80%, 100% { transform: scale(0); }
     40% { transform: scale(1.0); }
 }

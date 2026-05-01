@@ -71,6 +71,8 @@ class Gemini {
         this.speakBtn = document.getElementById('speak-btn');
         /** @type {NodeList} Quick reply buttons */
         this.quickBtns = document.querySelectorAll('.quick-btn');
+        /** @type {HTMLButtonElement} Clear chat button */
+        this.clearBtn = document.getElementById('clear-chat-btn');
 
         /** @type {string} Gemini API endpoint */
         this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -114,6 +116,10 @@ class Gemini {
                 this.handleUserMessage();
             });
         });
+
+        if (this.clearBtn) {
+            this.clearBtn.addEventListener('click', () => this.clearHistory());
+        }
 
         // Render persisted history
         if (this.history.length > 0) {
@@ -324,9 +330,16 @@ class Gemini {
                 if (part.text) aiText += part.text;
             });
 
+            // Extract Grounding Metadata
+            const grounding = candidates[0].groundingMetadata;
+            if (grounding && grounding.searchEntryPoint) {
+                aiText += `\n\n*Verified via Google Search*`;
+            }
+
             return {
                 text: aiText || "I processed your request but couldn't generate a text response.",
-                thought: thoughtProcess
+                thought: thoughtProcess,
+                grounding: grounding
             };
         } catch (error) {
             clearTimeout(timeoutId);
@@ -368,6 +381,14 @@ class Gemini {
             thoughtDetails.appendChild(content);
 
             msgDiv.prepend(thoughtDetails);
+        }
+
+        // Add Google Search Grounding Sources if available
+        if (sender === 'ai' && text.includes('Verified via Google Search')) {
+            const badge = document.createElement('div');
+            badge.style.cssText = 'font-size: 0.7rem; color: #4285F4; margin-top: 10px; display: flex; align-items: center; gap: 5px;';
+            badge.innerHTML = '<i class="fab fa-google"></i> Grounded with Google Search';
+            msgDiv.appendChild(badge);
         }
 
         msgWrapper.appendChild(msgDiv);

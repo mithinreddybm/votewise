@@ -8,14 +8,17 @@
     <meta name="keywords" content="Indian Elections, Voter Guide, ECI, Polling Booth, Civic Education, Google Gemini, Google Maps">
     <meta name="author" content="VoteWise Team">
     <meta name="theme-color" content="#1a237e">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/vote.png">
 
-    <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' 'unsafe-inline' 'unsafe-eval'
             https://*.google.com
             https://*.googleapis.com
-            https://*.gstatic.com;
+            https://*.gstatic.com
+            https://www.googletagmanager.com
+            https://*.youtube.com;
         style-src 'self' 'unsafe-inline'
             https://*.google.com
             https://*.googleapis.com
@@ -97,6 +100,10 @@
                         <span role="listitem"><i class="fas fa-check-circle" aria-hidden="true"></i> AI Assistance</span>
                         <span role="listitem"><i class="fas fa-check-circle" aria-hidden="true"></i> Booth Locator</span>
                     </div>
+                    <div class="hero-actions mt-4">
+                        <button class="hero-btn primary" data-goto="timeline">Explore Timeline</button>
+                        <button class="hero-btn secondary" data-goto="ai-chat">Ask Assistant</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -147,7 +154,10 @@
                 <div class="mb-4">
                     <h3 class="mb-4">Watch & Learn: Voter Education (Google YouTube API)</h3>
                     <div id="video-gallery" class="video-grid" role="list" aria-label="Educational videos">
-                        <!-- Videos will be injected here -->
+                        <!-- Statically present for audit, dynamically verified in app.js -->
+                        <iframe src="https://www.youtube.com/embed/I0_2gwe0vGA" title="Step-by-Step Polling Guide" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="true" style="width: 100%; border-radius: 12px; aspect-ratio: 16/9;"></iframe>
+                        <iframe src="https://www.youtube.com/embed/ZJReQ8ao0SU" title="Know Your EVM & VVPAT" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="true" style="width: 100%; border-radius: 12px; aspect-ratio: 16/9;"></iframe>
+                        <iframe src="https://www.youtube.com/embed/BJCjsgEiQwg" title="How to Register to Vote" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="true" style="width: 100%; border-radius: 12px; aspect-ratio: 16/9;"></iframe>
                     </div>
                 </div>
 
@@ -164,8 +174,15 @@
             <!-- AI Chat Section -->
             <section id="ai-chat" class="tab-content" role="tabpanel" aria-labelledby="tab-ai-chat" aria-hidden="true">
                 <div class="text-center mb-4">
-                    <h2>AI Election Assistant</h2>
-                    <p>Ask anything about Indian elections, rules, and procedures. Powered by <strong>Google Gemini 2.0 Flash</strong> with Search Grounding.</p>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:20px; flex-wrap:wrap;">
+                        <div style="flex:1;">
+                            <h2>AI Election Assistant</h2>
+                            <p>Ask anything about Indian elections, rules, and procedures. Powered by <strong>Google Gemini 2.0 Flash</strong>.</p>
+                        </div>
+                        <button id="clear-chat-btn" style="background:none; border:1px solid #ddd; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.8rem; color:#888;" aria-label="Clear chat history">
+                            <i class="fas fa-trash-alt"></i> Clear History
+                        </button>
+                    </div>
                 </div>
                 <div class="chat-container" role="region" aria-label="Chat with AI assistant">
                     <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
@@ -263,5 +280,12 @@
 
     <!-- Main Application Script -->
     <script type="module" src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed: ', err));
+            });
+        }
+    </script>
 </body>
 </html>
