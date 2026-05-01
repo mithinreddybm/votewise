@@ -1,10 +1,22 @@
 /**
- * Timeline component for VoteWise.
+ * @fileoverview Timeline component for VoteWise.
  * Manages the data and rendering of the election process timeline.
+ * @module timeline
+ */
+
+'use strict';
+
+/**
+ * Timeline class.
  */
 class Timeline {
+    /**
+     * Creates a new Timeline instance with election steps.
+     */
     constructor() {
+        /** @type {HTMLElement} Timeline container element */
         this.container = document.getElementById('timeline-container');
+        /** @type {Array<Object>} Timeline steps dataset */
         this.steps = [
             {
                 title: "Election Announcement + MCC",
@@ -85,38 +97,74 @@ class Timeline {
      * Initializes and renders the timeline.
      */
     init() {
-        this.render();
-        this.setupListeners();
+        this._render();
+        this._setupListeners();
     }
 
     /**
-     * Renders timeline items to the DOM.
+     * Renders timeline items to the DOM using safe methods.
+     * @private
      */
-    render() {
+    _render() {
         if (!this.container) return;
+        this.container.innerHTML = '';
         
-        this.container.innerHTML = this.steps.map((step, index) => `
-            <div class="timeline-item ${index % 2 === 0 ? 'left' : 'right'}">
-                <div class="timeline-content" data-index="${index}">
-                    <span class="badge ${step.badgeClass}">${step.badge}</span>
-                    <h3>${step.title}</h3>
-                    <p><strong>${step.day}</strong></p>
-                    <p>${step.description}</p>
-                    <small style="color: var(--color-navy); cursor: pointer;">Read more +</small>
-                </div>
-            </div>
-        `).join('');
+        this.steps.forEach((step, index) => {
+            const item = document.createElement('div');
+            item.className = `timeline-item ${index % 2 === 0 ? 'left' : 'right'}`;
+            item.setAttribute('role', 'listitem');
+
+            const content = document.createElement('div');
+            content.className = 'timeline-content';
+            content.dataset.index = index;
+            content.setAttribute('tabindex', '0');
+            content.setAttribute('aria-label', `Step ${index + 1}: ${step.title}`);
+
+            const badge = document.createElement('span');
+            badge.className = `badge ${step.badgeClass}`;
+            badge.textContent = step.badge;
+
+            const title = document.createElement('h3');
+            title.textContent = step.title;
+
+            const day = document.createElement('p');
+            day.innerHTML = `<strong>${step.day}</strong>`;
+
+            const desc = document.createElement('p');
+            desc.textContent = step.description;
+
+            const more = document.createElement('small');
+            more.style.cssText = 'color: var(--color-navy); cursor: pointer; display: block; margin-top: 10px;';
+            more.textContent = 'Read more +';
+
+            content.append(badge, title, day, desc, more);
+            item.appendChild(content);
+            this.container.appendChild(item);
+        });
     }
 
     /**
      * Sets up click listeners for timeline items to show details.
+     * @private
      */
-    setupListeners() {
+    _setupListeners() {
         this.container.addEventListener('click', (e) => {
             const content = e.target.closest('.timeline-content');
             if (content) {
                 const index = content.dataset.index;
-                this.showDetails(this.steps[index]);
+                this._showDetails(this.steps[index]);
+            }
+        });
+
+        // Keyboard support for timeline items
+        this.container.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const content = e.target.closest('.timeline-content');
+                if (content) {
+                    e.preventDefault();
+                    const index = content.dataset.index;
+                    this._showDetails(this.steps[index]);
+                }
             }
         });
     }
@@ -124,33 +172,63 @@ class Timeline {
     /**
      * Shows detailed modal for a timeline step.
      * @param {Object} step - The timeline step object.
+     * @private
      */
-    showDetails(step) {
+    _showDetails(step) {
         const modal = document.getElementById('details-modal');
         const modalBody = document.getElementById('modal-body');
+        if (!modal || !modalBody) return;
         
-        modalBody.innerHTML = `
-            <span class="badge ${step.badgeClass}">${step.badge}</span>
-            <h2 style="margin: 15px 0;">${step.title}</h2>
-            <p style="font-weight: 700; color: var(--color-navy); margin-bottom: 20px;">Timeline: ${step.day}</p>
-            
-            <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom: 10px; color: var(--color-saffron);">Overview</h4>
-                <p>${step.description}</p>
-            </div>
-            
-            <div style="margin-bottom: 25px;">
-                <h4 style="margin-bottom: 10px; color: var(--color-saffron);">Detailed Process</h4>
-                <p>${step.details}</p>
-            </div>
-            
-            <div style="padding: 15px; background: var(--color-gray-light); border-radius: 8px; border-left: 4px solid var(--color-navy);">
-                <h4 style="margin-bottom: 5px; font-size: 0.9rem;">Legal Reference</h4>
-                <p style="font-size: 0.85rem; font-style: italic;">${step.legal}</p>
-            </div>
-        `;
+        modalBody.innerHTML = ''; // Clear previous
+
+        const badge = document.createElement('span');
+        badge.className = `badge ${step.badgeClass}`;
+        badge.textContent = step.badge;
+
+        const title = document.createElement('h2');
+        title.style.margin = '15px 0';
+        title.textContent = step.title;
+
+        const day = document.createElement('p');
+        day.style.cssText = 'font-weight: 700; color: var(--color-navy); margin-bottom: 20px;';
+        day.textContent = `Timeline: ${step.day}`;
+
+        const overviewHeader = document.createElement('h4');
+        overviewHeader.style.cssText = 'margin-bottom: 10px; color: var(--color-saffron);';
+        overviewHeader.textContent = 'Overview';
+
+        const desc = document.createElement('p');
+        desc.style.marginBottom = '25px';
+        desc.textContent = step.description;
+
+        const processHeader = document.createElement('h4');
+        processHeader.style.cssText = 'margin-bottom: 10px; color: var(--color-saffron);';
+        processHeader.textContent = 'Detailed Process';
+
+        const details = document.createElement('p');
+        details.style.marginBottom = '25px';
+        details.textContent = step.details;
+
+        const legalBox = document.createElement('div');
+        legalBox.style.cssText = 'padding: 15px; background: var(--color-gray-light); border-radius: 8px; border-left: 4px solid var(--color-navy);';
+        
+        const legalHeader = document.createElement('h4');
+        legalHeader.style.cssText = 'margin-bottom: 5px; font-size: 0.9rem;';
+        legalHeader.textContent = 'Legal Reference';
+
+        const legalText = document.createElement('p');
+        legalText.style.cssText = 'font-size: 0.85rem; font-style: italic;';
+        legalText.textContent = step.legal;
+
+        legalBox.append(legalHeader, legalText);
+        modalBody.append(badge, title, day, overviewHeader, desc, processHeader, details, legalBox);
         
         modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        
+        // Focus management: move focus to close button
+        const closeBtn = modal.querySelector('.close-modal');
+        if (closeBtn) closeBtn.focus();
     }
 }
 

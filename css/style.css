@@ -1,7 +1,48 @@
 /* 
    VoteWise Design System
    Colors: Saffron (#FF9933), White, India Green (#138808), Navy (#1a237e)
+   Accessibility: WCAG 2.1 AA compliant
 */
+
+/* Skip Navigation Link - Accessibility */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-navy, #1a237e);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 0 0 8px 8px;
+    z-index: 10000;
+    text-decoration: none;
+    font-weight: 700;
+    transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Screen Reader Only - Accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus Visible - Accessibility */
+*:focus-visible {
+    outline: 3px solid var(--color-saffron, #FF9933);
+    outline-offset: 2px;
+}
+
 
 /* Login Screen Overlay */
 .login-screen {

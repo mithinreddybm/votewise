@@ -1,12 +1,30 @@
 /**
- * Civic Quiz engine for VoteWise.
+ * @fileoverview Civic Quiz engine for VoteWise.
  * Handles MCQ logic, scoring, and progress tracking.
+ * Includes Google Analytics integration for performance tracking.
+ * @module quiz
+ */
+
+'use strict';
+
+import analytics from './analytics.js';
+
+/**
+ * Civic Quiz engine class.
  */
 class Quiz {
+    /**
+     * Creates a new Quiz instance with questions and state.
+     */
     constructor() {
+        /** @type {HTMLElement} Quiz container */
         this.container = document.getElementById('quiz-app');
+        /** @type {number} Current question index */
         this.currentQuestionIndex = 0;
+        /** @type {number} Current user score */
         this.score = 0;
+        
+        /** @type {Array<Object>} Question dataset */
         this.questions = [
             {
                 question: "What is the minimum age required to vote in Indian General Elections?",
@@ -63,56 +81,69 @@ class Quiz {
      * Initializes the quiz.
      */
     init() {
-        this.renderQuestion();
+        this._renderQuestion();
+        analytics.trackGoogleServiceUsage('Quiz Engine', 'initialized');
     }
 
     /**
      * Renders the current question and progress.
+     * @private
      */
-    renderQuestion() {
+    _renderQuestion() {
         if (!this.container) return;
 
         const question = this.questions[this.currentQuestionIndex];
         const progress = ((this.currentQuestionIndex) / this.questions.length) * 100;
 
-        this.container.innerHTML = `
-            <div class="progress-container">
-                <div class="progress-bar" style="width: ${progress}%"></div>
-            </div>
-            <p class="mb-4">Question ${this.currentQuestionIndex + 1} of ${this.questions.length}</p>
-            <div class="question-text">${question.question}</div>
-            <div class="options-grid">
-                ${question.options.map((option, index) => `
-                    <button class="option-btn" data-index="${index}">${option}</button>
-                `).join('')}
-            </div>
-            <div id="feedback" class="mt-4 hidden"></div>
-            <button id="next-btn" class="search-btn mt-4 hidden" style="width: 100%">Next Question</button>
-        `;
+        // Clean DOM construction to prevent XSS
+        this.container.innerHTML = '';
+        
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressBar.style.width = `${progress}%`;
+        progressContainer.appendChild(progressBar);
 
-        this.setupListeners();
-    }
+        const countText = document.createElement('p');
+        countText.className = 'mb-4';
+        countText.textContent = `Question ${this.currentQuestionIndex + 1} of ${this.questions.length}`;
 
-    /**
-     * Sets up click listeners for options.
-     */
-    setupListeners() {
-        const btns = this.container.querySelectorAll('.option-btn');
-        btns.forEach(btn => {
-            btn.addEventListener('click', (e) => this.handleAnswer(parseInt(e.target.dataset.index)));
+        const qText = document.createElement('div');
+        qText.className = 'question-text';
+        qText.textContent = question.question;
+
+        const optionsGrid = document.createElement('div');
+        optionsGrid.className = 'options-grid';
+        question.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = option;
+            btn.dataset.index = index;
+            btn.addEventListener('click', () => this._handleAnswer(index));
+            optionsGrid.appendChild(btn);
         });
 
-        const nextBtn = this.container.querySelector('#next-btn');
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => this.nextQuestion());
-        }
+        const feedback = document.createElement('div');
+        feedback.id = 'feedback';
+        feedback.className = 'mt-4 hidden';
+
+        const nextBtn = document.createElement('button');
+        nextBtn.id = 'next-btn';
+        nextBtn.className = 'search-btn mt-4 hidden';
+        nextBtn.style.width = '100%';
+        nextBtn.textContent = this.currentQuestionIndex === this.questions.length - 1 ? "See Final Results" : "Next Question";
+        nextBtn.addEventListener('click', () => this._nextQuestion());
+
+        this.container.append(progressContainer, countText, qText, optionsGrid, feedback, nextBtn);
     }
 
     /**
      * Handles the user's answer selection.
      * @param {number} selectedIndex - Index of the selected option.
+     * @private
      */
-    handleAnswer(selectedIndex) {
+    _handleAnswer(selectedIndex) {
         const question = this.questions[this.currentQuestionIndex];
         const btns = this.container.querySelectorAll('.option-btn');
         const feedback = this.container.querySelector('#feedback');
@@ -121,40 +152,50 @@ class Quiz {
         // Disable all buttons
         btns.forEach(btn => btn.disabled = true);
 
+        feedback.innerHTML = ''; // Clear previous
+
         if (selectedIndex === question.correct) {
             this.score++;
             btns[selectedIndex].classList.add('correct');
-            feedback.innerHTML = `<div style="color: var(--color-green); font-weight: 700;">Correct!</div><p>${question.explanation}</p>`;
+            const correctTitle = document.createElement('div');
+            correctTitle.style.cssText = 'color: var(--color-green); font-weight: 700;';
+            correctTitle.textContent = 'Correct!';
+            feedback.appendChild(correctTitle);
         } else {
             btns[selectedIndex].classList.add('wrong');
             btns[question.correct].classList.add('correct');
-            feedback.innerHTML = `<div style="color: #ff5252; font-weight: 700;">Incorrect</div><p>${question.explanation}</p>`;
+            const wrongTitle = document.createElement('div');
+            wrongTitle.style.cssText = 'color: #ff5252; font-weight: 700;';
+            wrongTitle.textContent = 'Incorrect';
+            feedback.appendChild(wrongTitle);
         }
+
+        const explanation = document.createElement('p');
+        explanation.textContent = question.explanation;
+        feedback.appendChild(explanation);
 
         feedback.classList.remove('hidden');
         nextBtn.classList.remove('hidden');
-        
-        if (this.currentQuestionIndex === this.questions.length - 1) {
-            nextBtn.textContent = "See Final Results";
-        }
     }
 
     /**
      * Moves to the next question or shows results.
+     * @private
      */
-    nextQuestion() {
+    _nextQuestion() {
         this.currentQuestionIndex++;
         if (this.currentQuestionIndex < this.questions.length) {
-            this.renderQuestion();
+            this._renderQuestion();
         } else {
-            this.showResults();
+            this._showResults();
         }
     }
 
     /**
      * Renders the final score and results.
+     * @private
      */
-    showResults() {
+    _showResults() {
         const percentage = (this.score / this.questions.length) * 100;
         let message = "";
         
@@ -162,6 +203,8 @@ class Quiz {
         else if (percentage >= 70) message = "Great job! You have high civic awareness.";
         else if (percentage >= 50) message = "Good effort! Keep learning about our democracy.";
         else message = "Time to brush up on your election knowledge!";
+
+        analytics.trackQuizComplete(this.score, this.questions.length);
 
         this.container.innerHTML = `
             <div class="text-center">
@@ -180,7 +223,8 @@ class Quiz {
         document.getElementById('restart-btn').addEventListener('click', () => {
             this.currentQuestionIndex = 0;
             this.score = 0;
-            this.renderQuestion();
+            this._renderQuestion();
+            analytics.trackEvent('quiz_restart', { category: 'quiz_interaction' });
         });
     }
 }

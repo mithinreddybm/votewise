@@ -4,24 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoteWise | AI-Powered Indian Election Guide</title>
-    <meta name="description" content="VoteWise is an interactive assistant helping Indian citizens understand the election process, timelines, and find polling booths using AI and Maps.">
-    
-    <!-- Fonts -->
+    <meta name="description" content="VoteWise is an AI-powered interactive assistant helping Indian citizens understand the election process, timelines, and find polling booths using Google Gemini and Maps.">
+    <meta name="keywords" content="Indian Elections, Voter Guide, ECI, Polling Booth, Civic Education, Google Gemini, Google Maps">
+    <meta name="author" content="VoteWise Team">
+    <meta name="theme-color" content="#1a237e">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval'
+            https://accounts.google.com
+            https://maps.googleapis.com
+            https://translate.google.com
+            https://translate.googleapis.com
+            https://translate-pa.googleapis.com;
+        style-src 'self' 'unsafe-inline'
+            https://fonts.googleapis.com
+            https://cdnjs.cloudflare.com
+            https://translate.googleapis.com;
+        font-src 'self'
+            https://fonts.gstatic.com
+            https://cdnjs.cloudflare.com;
+        img-src 'self' data: blob:
+            https://*.googleapis.com
+            https://*.gstatic.com
+            https://*.google.com
+            https://*.googleusercontent.com
+            https://maps.google.com;
+        connect-src 'self'
+            https://generativelanguage.googleapis.com
+            https://*.aiplatform.googleapis.com
+            https://maps.googleapis.com
+            https://translate.googleapis.com
+            https://www.google-analytics.com
+            https://www.googletagmanager.com;
+        frame-src
+            https://accounts.google.com
+            https://translate.google.com;
+    ">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:title" content="VoteWise | AI-Powered Indian Election Guide">
+    <meta property="og:description" content="Navigate India's democracy with AI-powered insights, polling booth finder, and civic education tools.">
+    <meta property="og:type" content="website">
+
+    <!-- Fonts (Google Fonts) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
-    
+
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
-    
+
     <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl0CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 <body>
+    <!-- Skip Navigation Link for Accessibility -->
+    <a href="#main-content" class="skip-link" id="skip-nav">Skip to main content</a>
+
     <!-- Login Screen Overlay -->
-    <div id="login-screen" class="login-screen">
+    <div id="login-screen" class="login-screen" role="dialog" aria-modal="true" aria-label="Sign in to VoteWise">
         <div class="login-card">
-            <div class="logo-icon" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 20px auto;">V</div>
+            <div class="logo-icon" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 20px auto;" aria-hidden="true">V</div>
             <h2>Welcome to VoteWise</h2>
             <p>Please sign in with your Google account to access the election assistant and tools.</p>
             <div id="login-button-container" class="mt-4"></div>
@@ -30,71 +75,71 @@
 
     <!-- Main App Shell (Hidden until login) -->
     <div id="app-shell" class="hidden">
-        <header>
+        <header role="banner">
             <div class="container">
                 <div class="logo">
-                    <div class="logo-icon">V</div>
+                    <div class="logo-icon" aria-hidden="true">V</div>
                     <h1>VoteWise</h1>
                 </div>
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div id="user-profile"></div>
-                    <div id="google_translate_element"></div>
+                    <div id="user-profile" aria-label="User profile"></div>
+                    <div id="google_translate_element" aria-label="Language selector"></div>
                 </div>
             </div>
         </header>
 
-        <section class="hero">
+        <section class="hero" aria-label="Hero banner">
             <div class="container">
                 <div class="hero-content">
                     <h2>Empowering Every Indian Voter</h2>
                     <p>Navigate the world's largest democracy with AI-powered insights, real-time guides, and interactive tools.</p>
-                    <div class="hero-badges">
-                        <span><i class="fas fa-check-circle"></i> ECI Process Guide</span>
-                        <span><i class="fas fa-check-circle"></i> AI Assistance</span>
-                        <span><i class="fas fa-check-circle"></i> Booth Locator</span>
+                    <div class="hero-badges" role="list">
+                        <span role="listitem"><i class="fas fa-check-circle" aria-hidden="true"></i> ECI Process Guide</span>
+                        <span role="listitem"><i class="fas fa-check-circle" aria-hidden="true"></i> AI Assistance</span>
+                        <span role="listitem"><i class="fas fa-check-circle" aria-hidden="true"></i> Booth Locator</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <nav class="nav-tabs" role="tablist">
-            <button class="tab-btn active" data-tab="timeline" role="tab" aria-selected="true" aria-controls="timeline" aria-label="View election timeline">
+        <nav class="nav-tabs" role="tablist" aria-label="Application sections">
+            <button class="tab-btn active" data-tab="timeline" role="tab" id="tab-timeline" aria-selected="true" aria-controls="timeline" tabindex="0">
                 <i class="fas fa-history" aria-hidden="true"></i> Timeline
             </button>
-            <button class="tab-btn" data-tab="ai-chat" role="tab" aria-selected="false" aria-controls="ai-chat" aria-label="Open AI Assistant">
+            <button class="tab-btn" data-tab="ai-chat" role="tab" id="tab-ai-chat" aria-selected="false" aria-controls="ai-chat" tabindex="-1">
                 <i class="fas fa-robot" aria-hidden="true"></i> AI Assistant
             </button>
-            <button class="tab-btn" data-tab="booth-finder" role="tab" aria-selected="false" aria-controls="booth-finder" aria-label="Locate polling booth">
+            <button class="tab-btn" data-tab="booth-finder" role="tab" id="tab-booth-finder" aria-selected="false" aria-controls="booth-finder" tabindex="-1">
                 <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Find Booth
             </button>
-            <button class="tab-btn" data-tab="quiz" role="tab" aria-selected="false" aria-controls="quiz" aria-label="Take civic quiz">
-                <i class="fas fa-voter-card" aria-hidden="true"></i> Civic Quiz
+            <button class="tab-btn" data-tab="quiz" role="tab" id="tab-quiz" aria-selected="false" aria-controls="quiz" tabindex="-1">
+                <i class="fas fa-clipboard-check" aria-hidden="true"></i> Civic Quiz
             </button>
         </nav>
 
-        <main class="container">
+        <main class="container" id="main-content">
             <!-- Timeline Section -->
-            <section id="timeline" class="tab-content active">
+            <section id="timeline" class="tab-content active" role="tabpanel" aria-labelledby="tab-timeline" aria-hidden="false">
                 <div class="text-center mb-4">
                     <h2>India's 18th Lok Sabha at a Glance</h2>
                     <p>Authentic data and metrics from the 2024 General Elections</p>
                 </div>
 
                 <!-- Stats Grid -->
-                <div id="election-stats-grid" class="stats-grid mb-4">
+                <div id="election-stats-grid" class="stats-grid mb-4" role="list" aria-label="Election statistics">
                     <!-- Metrics will be injected here -->
                 </div>
 
                 <div class="overview-flex mb-4">
                     <div class="flex-item">
-                        <h3 class="mb-4">Major Parties & Alliances</h3>
-                        <div id="parties-grid" class="parties-grid">
+                        <h3 class="mb-4">Major Parties &amp; Alliances</h3>
+                        <div id="parties-grid" class="parties-grid" role="list" aria-label="Political parties">
                             <!-- Parties will be injected here -->
                         </div>
                     </div>
                     <div class="flex-item">
-                        <h3 class="mb-4">Election History & Future</h3>
-                        <div id="history-timeline" class="history-timeline">
+                        <h3 class="mb-4">Election History &amp; Future</h3>
+                        <div id="history-timeline" class="history-timeline" role="list" aria-label="Election history">
                             <!-- History will be injected here -->
                         </div>
                     </div>
@@ -105,78 +150,93 @@
                     <h2>Full Election Process Timeline</h2>
                     <p>Step-by-step journey of the Indian General Elections</p>
                 </div>
-                <div id="timeline-container" class="timeline">
+                <div id="timeline-container" class="timeline" role="list" aria-label="Election process steps">
                     <!-- Timeline items will be injected here -->
                 </div>
             </section>
 
             <!-- AI Chat Section -->
-            <section id="ai-chat" class="tab-content">
+            <section id="ai-chat" class="tab-content" role="tabpanel" aria-labelledby="tab-ai-chat" aria-hidden="true">
                 <div class="text-center mb-4">
                     <h2>AI Election Assistant</h2>
-                    <p>Ask anything about Indian elections, rules, and procedures</p>
+                    <p>Ask anything about Indian elections, rules, and procedures. Powered by <strong>Google Gemini 2.0 Flash</strong> with Search Grounding.</p>
                 </div>
-                <div class="chat-container">
-                    <div id="chat-messages" class="chat-messages">
-                        <div class="message ai">
-                            Namaste! I am your VoteWise AI assistant. How can I help you today?
+                <div class="chat-container" role="region" aria-label="Chat with AI assistant">
+                    <div id="chat-messages" class="chat-messages" role="log" aria-live="polite" aria-label="Chat messages">
+                        <div class="message ai" role="status">
+                            Namaste! I am your VoteWise AI assistant, powered by Google Gemini. I can help you with voter registration, ECI rules, EVM/VVPAT, and more. How can I help you today?
                         </div>
                     </div>
-                    <div class="quick-replies">
-                        <button class="quick-btn" data-query="How to register as a voter?">How to register?</button>
-                        <button class="quick-btn" data-query="What is EVM and VVPAT?">What is EVM/VVPAT?</button>
-                        <button class="quick-btn" data-query="Explain Model Code of Conduct">Model Code of Conduct</button>
-                        <button class="quick-btn" data-query="How are votes counted in India?">How are votes counted?</button>
+                    <div class="quick-replies" role="group" aria-label="Suggested questions">
+                        <button class="quick-btn" data-query="How to register as a voter?" aria-label="Ask: How to register as a voter?">How to register?</button>
+                        <button class="quick-btn" data-query="What is EVM and VVPAT?" aria-label="Ask: What is EVM and VVPAT?">What is EVM/VVPAT?</button>
+                        <button class="quick-btn" data-query="Explain Model Code of Conduct" aria-label="Ask: Explain Model Code of Conduct">Model Code of Conduct</button>
+                        <button class="quick-btn" data-query="How are votes counted in India?" aria-label="Ask: How are votes counted?">How are votes counted?</button>
                     </div>
                     <div class="chat-input-area">
-                        <input type="text" id="chat-input" placeholder="Type your question here..." aria-label="Chat input">
+                        <label for="chat-input" class="sr-only">Type your question about Indian elections</label>
+                        <input type="text" id="chat-input" placeholder="Type your question here..." aria-label="Chat input" autocomplete="off" maxlength="500">
                         <button id="send-btn" class="send-btn" aria-label="Send message">
-                            <i class="fas fa-paper-plane"></i>
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
             </section>
 
             <!-- Booth Finder Section -->
-            <section id="booth-finder" class="tab-content">
+            <section id="booth-finder" class="tab-content" role="tabpanel" aria-labelledby="tab-booth-finder" aria-hidden="true">
                 <div class="text-center mb-4">
                     <h2>Find My Polling Booth</h2>
-                    <p>Enter your address or pincode to locate your designated polling station</p>
+                    <p>Enter your address or pincode to locate your designated polling station using <strong>Google Maps</strong>.</p>
                 </div>
-                <div class="search-box">
-                    <input type="text" id="booth-search" placeholder="Enter Address or Pincode (e.g. Bangalore 560001)" aria-label="Search booth">
-                    <button id="search-btn" class="search-btn">Find Booth</button>
+                <div class="search-box" role="search" aria-label="Search for polling booth">
+                    <label for="booth-search" class="sr-only">Enter your address or pincode</label>
+                    <input type="text" id="booth-search" placeholder="Enter Address or Pincode (e.g. Bangalore 560001)" aria-label="Search booth location" autocomplete="off" maxlength="200">
+                    <button id="search-btn" class="search-btn" aria-label="Search for polling booth">Find Booth</button>
                 </div>
-                <div id="map-container">
+                <div id="map-container" role="application" aria-label="Interactive polling booth map">
                     <!-- Google Map will be injected here -->
                 </div>
                 <div class="text-center mt-4">
-                    <p><small>Note: Map data is for illustrative purposes. For official records, visit <a href="https://voters.eci.gov.in" target="_blank">voters.eci.gov.in</a></small></p>
+                    <p><small>Note: Map data is for illustrative purposes. For official records, visit <a href="https://voters.eci.gov.in" target="_blank" rel="noopener noreferrer">voters.eci.gov.in</a></small></p>
                 </div>
             </section>
 
             <!-- Quiz Section -->
-            <section id="quiz" class="tab-content">
+            <section id="quiz" class="tab-content" role="tabpanel" aria-labelledby="tab-quiz" aria-hidden="true">
                 <div class="text-center mb-4">
                     <h2>Civic Awareness Quiz</h2>
                     <p>Test your knowledge of Indian election laws and processes</p>
                 </div>
-                <div id="quiz-app" class="quiz-container">
+                <div id="quiz-app" class="quiz-container" role="region" aria-label="Civic knowledge quiz">
                     <!-- Quiz content will be injected here -->
                 </div>
             </section>
         </main>
+
+        <footer role="contentinfo" style="text-align:center;padding:30px 20px;color:#666;font-size:0.85rem;">
+            <p>VoteWise © 2024 | Built with
+                <strong>Google Gemini</strong>,
+                <strong>Google Maps</strong>,
+                <strong>Google Identity Services</strong>,
+                <strong>Google Fonts</strong>,
+                <strong>Google Translate</strong>, and
+                <strong>Google Analytics</strong>
+            </p>
+            <p style="margin-top:8px;">For official voter information, visit <a href="https://voters.eci.gov.in" target="_blank" rel="noopener noreferrer">voters.eci.gov.in</a></p>
+            <button id="run-audit-btn" style="margin-top:15px; background:none; border:1px solid #ccc; color:#888; padding:5px 12px; border-radius:20px; cursor:pointer; font-size:0.75rem;">Run Quality Audit (v1.2.0)</button>
+        </footer>
     </div>
 
-    <!-- Modal for details -->
-    <div id="details-modal" class="modal">
+    <!-- Modal for timeline details -->
+    <div id="details-modal" class="modal" role="dialog" aria-modal="true" aria-label="Timeline step details" aria-hidden="true">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
+            <button class="close-modal" aria-label="Close dialog">&times;</button>
             <div id="modal-body"></div>
         </div>
     </div>
 
-    <!-- Google Translate Script -->
+    <!-- Google Translate Script (Google Service #5) -->
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({
@@ -188,7 +248,7 @@
     </script>
     <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-    <!-- Scripts -->
+    <!-- Main Application Script -->
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

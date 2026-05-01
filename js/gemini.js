@@ -1,18 +1,83 @@
+/**
+ * @fileoverview Gemini AI Assistant for VoteWise.
+ * Features: Deep Reasoning (Thinking), Google Search Grounding,
+ * input sanitization, rate limiting, and chat history persistence.
+ * @module gemini
+ */
+
+'use strict';
+
 import config from './config.js';
+import analytics from './analytics.js';
+
+/** @constant {number} Minimum interval between API calls in ms */
+const RATE_LIMIT_MS = 1000;
+
+/** @constant {number} Maximum length of user input */
+const MAX_INPUT_LENGTH = 500;
+
+/** @constant {number} Maximum history entries to persist */
+const MAX_HISTORY_SIZE = 50;
+
+/** @constant {string} localStorage key for chat history */
+const HISTORY_STORAGE_KEY = 'votewise_chat_history';
 
 /**
- * Gemini AI Assistant for VoteWise (Advanced 2.0 Version).
- * Features: Deep Reasoning (Thinking) & Google Search Grounding.
+ * Sanitizes a string by escaping HTML special characters to prevent XSS.
+ * @param {string} str - The string to sanitize.
+ * @returns {string} The sanitized string.
+ */
+function sanitizeHTML(str) {
+    if (!str || typeof str !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+/**
+ * Formats markdown-like text to safe HTML.
+ * Only allows bold (**text**) and line breaks.
+ * @param {string} text - Text with basic markdown.
+ * @returns {string} Safely formatted HTML string.
+ */
+function formatMarkdown(text) {
+    if (!text) return '';
+    // First sanitize to prevent XSS
+    let safe = sanitizeHTML(text);
+    // Then apply safe formatting
+    safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/\n/g, '<br>');
+    return safe;
+}
+
+/**
+ * Gemini AI Assistant class.
+ * Manages chat interactions with Google Gemini API.
  */
 class Gemini {
+    /**
+     * Creates a new Gemini assistant instance.
+     */
     constructor() {
+        /** @type {HTMLElement} Chat messages container */
         this.chatMessages = document.getElementById('chat-messages');
+        /** @type {HTMLInputElement} Chat input field */
         this.chatInput = document.getElementById('chat-input');
+        /** @type {HTMLButtonElement} Send button */
         this.sendBtn = document.getElementById('send-btn');
+        /** @type {NodeList} Quick reply buttons */
         this.quickBtns = document.querySelectorAll('.quick-btn');
-        
+
+        /** @type {string} Gemini API endpoint */
         this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-        this.history = this.loadHistory();
+        /** @type {Array<Object>} Chat history */
+        this.history = this._loadHistory();
+        /** @type {number} Last API call timestamp for rate limiting */
+        this._lastCallTimestamp = 0;
+        /** @type {boolean} Whether a request is currently in progress */
+        this._isProcessing = false;
+
+        /** @type {string} System prompt for the AI */
         this.systemPrompt = `You are a VoteWise AI Assistant, an expert in Indian elections. 
         Your goal is to help citizens understand the voting process, ECI rules, EVM/VVPAT, voter registration, Model Code of Conduct, and Lok Sabha/Vidhan Sabha processes.
         Use your Google Search tool to verify real-time facts about current candidate lists, polling dates, and results.
@@ -23,10 +88,10 @@ class Gemini {
     }
 
     /**
-     * Initializes the chat assistant.
+     * Initializes the chat assistant by binding event listeners.
      */
     init() {
-        if (!this.sendBtn) return;
+        if (!this.sendBtn || !this.chatInput) return;
 
         this.sendBtn.addEventListener('click', () => this.handleUserMessage());
         this.chatInput.addEventListener('keypress', (e) => {
@@ -41,106 +106,157 @@ class Gemini {
             });
         });
 
-        // Render history if exists
+        // Render persisted history
         if (this.history.length > 0) {
-            this.renderHistory();
+            this._renderHistory();
         }
     }
 
     /**
-     * Loads chat history from localStorage.
+     * Loads chat history from localStorage with error handling.
+     * @returns {Array<Object>} Array of chat message objects.
+     * @private
      */
-    loadHistory() {
+    _loadHistory() {
         try {
-            const saved = localStorage.getItem('votewise_chat_history');
-            return saved ? JSON.parse(saved) : [];
+            const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
+            if (!saved) return [];
+            const parsed = JSON.parse(saved);
+            return Array.isArray(parsed) ? parsed.slice(-MAX_HISTORY_SIZE) : [];
         } catch (e) {
-            console.error('Failed to load history:', e);
+            console.error('Failed to load chat history:', e.message);
             return [];
         }
     }
 
     /**
-     * Saves chat history to localStorage.
+     * Saves chat history to localStorage with size limit.
+     * @private
      */
-    saveHistory() {
+    _saveHistory() {
         try {
-            localStorage.setItem('votewise_chat_history', JSON.stringify(this.history));
+            const trimmed = this.history.slice(-MAX_HISTORY_SIZE);
+            localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(trimmed));
         } catch (e) {
-            console.error('Failed to save history:', e);
+            console.error('Failed to save chat history:', e.message);
         }
     }
 
     /**
-     * Renders saved history to the UI.
+     * Renders saved history messages to the chat UI.
+     * @private
      */
-    renderHistory() {
+    _renderHistory() {
         this.history.forEach(msg => {
-            this.addMessage(msg.text, msg.sender, msg.thought);
+            this._addMessage(msg.text, msg.sender, msg.thought);
         });
     }
 
     /**
-     * Handles processing the user's message.
+     * Validates user input for length and content.
+     * @param {string} text - User input text.
+     * @returns {boolean} True if input is valid.
+     * @private
+     */
+    _validateInput(text) {
+        if (!text || typeof text !== 'string') return false;
+        if (text.length > MAX_INPUT_LENGTH) {
+            this._addMessage(`Please keep your question under ${MAX_INPUT_LENGTH} characters.`, 'ai');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks if enough time has passed since the last API call.
+     * @returns {boolean} True if rate limit has not been exceeded.
+     * @private
+     */
+    _checkRateLimit() {
+        const now = Date.now();
+        if (now - this._lastCallTimestamp < RATE_LIMIT_MS) {
+            this._addMessage('Please wait a moment before sending another message.', 'ai');
+            return false;
+        }
+        this._lastCallTimestamp = now;
+        return true;
+    }
+
+    /**
+     * Handles processing the user's message with validation and rate limiting.
+     * @returns {Promise<void>}
      */
     async handleUserMessage() {
         const text = this.chatInput.value.trim();
-        if (!text) return;
+        if (!text || this._isProcessing) return;
 
+        if (!this._validateInput(text)) return;
+        if (!this._checkRateLimit()) return;
+
+        this._isProcessing = true;
         this.chatInput.value = '';
-        this.addMessage(text, 'user');
-        
-        // Update history
-        this.history.push({ text, sender: 'user', timestamp: Date.now() });
-        this.saveHistory();
+        this.sendBtn.disabled = true;
 
-        const typingId = this.showTyping();
+        this._addMessage(text, 'user');
+        this.history.push({ text, sender: 'user', timestamp: Date.now() });
+        this._saveHistory();
+
+        const typingId = this._showTyping();
 
         try {
-            const responseData = await this.callGemini(text);
-            this.removeTyping(typingId);
-            
-            this.addMessage(responseData.text, 'ai', responseData.thought);
-            
-            // Update history
-            this.history.push({ 
-                text: responseData.text, 
-                sender: 'ai', 
+            const responseData = await this._callGemini(text);
+            this._removeTyping(typingId);
+
+            analytics.trackChatMessage(text, true);
+            this._addMessage(responseData.text, 'ai', responseData.thought);
+
+            this.history.push({
+                text: responseData.text,
+                sender: 'ai',
                 thought: responseData.thought,
-                timestamp: Date.now() 
+                timestamp: Date.now()
             });
-            this.saveHistory();
+            this._saveHistory();
 
         } catch (error) {
-            console.error('Gemini error:', error);
-            this.removeTyping(typingId);
-            
+            console.error('Gemini API error:', error.message);
+            analytics.trackChatMessage(text, false);
+            analytics.trackEvent('ai_error', { message: error.message });
+            this._removeTyping(typingId);
+
             const apiKey = config.get('GEMINI_API_KEY');
             if (!apiKey || apiKey.includes('your_')) {
-                this.addMessage('API Key missing. Please configure your .env file to use the AI Assistant.', 'ai');
+                this._addMessage('API Key missing. Please configure your .env file to use the AI Assistant.', 'ai');
             } else {
-                this.addMessage('I am having trouble connecting right now. Please try again later.', 'ai');
+                this._addMessage('I am having trouble connecting right now. Please try again later.', 'ai');
             }
+        } finally {
+            this._isProcessing = false;
+            this.sendBtn.disabled = false;
+            this.chatInput.focus();
         }
     }
 
     /**
      * Calls the Gemini API with support for both AI Studio and Vertex AI.
-     * @param {string} prompt - User's prompt.
-     * @returns {Promise<Object>} AI response text and thought.
+     * @param {string} prompt - User's prompt text.
+     * @returns {Promise<{text: string, thought: string}>} AI response object.
+     * @throws {Error} If API call fails.
+     * @private
      */
-    async callGemini(prompt) {
+    async _callGemini(prompt) {
         const apiKey = config.get('GEMINI_API_KEY');
         const projectId = config.get('GCP_PROJECT_ID');
         const region = config.get('GCP_REGION') || 'us-central1';
-        
-        if (!apiKey) throw new Error('No API key');
+
+        if (!apiKey) throw new Error('No API key configured');
 
         const isVertex = apiKey.startsWith('AQ.');
-        let url = "";
-        let headers = { 'Content-Type': 'application/json' };
+        let url = '';
+        const headers = { 'Content-Type': 'application/json' };
 
         if (isVertex) {
+            if (!projectId) throw new Error('GCP_PROJECT_ID is required for Vertex AI');
             url = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/gemini-2.0-flash:streamGenerateContent`;
             headers['Authorization'] = `Bearer ${apiKey}`;
         } else {
@@ -150,10 +266,10 @@ class Gemini {
         const payload = {
             contents: [{
                 role: 'user',
-                parts: [{ text: this.systemPrompt + "\n\nUser Question: " + prompt }]
+                parts: [{ text: this.systemPrompt + '\n\nUser Question: ' + prompt }]
             }],
             tools: [{
-                google_search: {} 
+                google_search: {}
             }],
             generationConfig: {
                 temperature: 1,
@@ -165,63 +281,83 @@ class Gemini {
             }
         };
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(payload)
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error?.message || (Array.isArray(err) ? err[0].error.message : 'API Call Failed'));
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || 'API Call Failed');
+            }
+
+            const data = await response.json();
+            const candidates = isVertex ? data[0]?.candidates : data?.candidates;
+
+            if (!candidates || !candidates[0]?.content?.parts) {
+                throw new Error('Invalid API response format');
+            }
+
+            const parts = candidates[0].content.parts;
+            let aiText = '';
+            let thoughtProcess = '';
+
+            parts.forEach(part => {
+                if (part.thought) thoughtProcess += part.thought;
+                if (part.text) aiText += part.text;
+            });
+
+            return {
+                text: aiText || "I processed your request but couldn't generate a text response.",
+                thought: thoughtProcess
+            };
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('Request timed out. Please try again.');
+            }
+            throw error;
         }
-
-        const data = await response.json();
-        const candidates = isVertex ? data[0].candidates : data.candidates;
-        const parts = candidates[0].content.parts;
-        
-        let aiText = "";
-        let thoughtProcess = "";
-
-        parts.forEach(part => {
-            if (part.thought) thoughtProcess += part.thought;
-            if (part.text) aiText += part.text;
-        });
-
-        return {
-            text: aiText || "I processed your request but couldn't generate a text response.",
-            thought: thoughtProcess
-        };
     }
 
     /**
-     * Adds a message to the chat UI.
-     * @param {string} text - Message text.
-     * @param {string} sender - 'user' or 'ai'.
-     * @param {string} [thought] - Optional reasoning path.
+     * Adds a message to the chat UI using safe DOM methods.
+     * @param {string} text - Message text content.
+     * @param {string} sender - Message sender ('user' or 'ai').
+     * @param {string} [thought=''] - Optional AI reasoning/thought process.
+     * @private
      */
-    addMessage(text, sender, thought = '') {
+    _addMessage(text, sender, thought = '') {
         const msgWrapper = document.createElement('div');
         msgWrapper.className = `message-wrapper ${sender}`;
+        msgWrapper.setAttribute('role', 'log');
 
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${sender}`;
-        
-        // Basic markdown formatting
-        const formattedText = text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\n/g, '<br>');
-            
-        msgDiv.innerHTML = formattedText;
+        msgDiv.innerHTML = formatMarkdown(text);
 
         // Add Thought/Reasoning Path for AI messages
         if (sender === 'ai' && thought) {
             const thoughtDetails = document.createElement('details');
             thoughtDetails.className = 'thought-process';
-            thoughtDetails.innerHTML = `
-                <summary><i class="fas fa-brain"></i> View AI Reasoning</summary>
-                <div class="thought-content">${thought.replace(/\n/g, '<br>')}</div>
-            `;
+
+            const summary = document.createElement('summary');
+            summary.innerHTML = '<i class="fas fa-brain" aria-hidden="true"></i> View AI Reasoning';
+            thoughtDetails.appendChild(summary);
+
+            const content = document.createElement('div');
+            content.className = 'thought-content';
+            content.innerHTML = formatMarkdown(thought);
+            thoughtDetails.appendChild(content);
+
             msgDiv.prepend(thoughtDetails);
         }
 
@@ -231,17 +367,20 @@ class Gemini {
     }
 
     /**
-     * Shows the typing indicator.
+     * Shows the typing/loading indicator in the chat.
+     * @returns {string} Unique ID of the typing indicator element.
+     * @private
      */
-    showTyping() {
+    _showTyping() {
         const id = 'typing-' + Date.now();
         const typingDiv = document.createElement('div');
         typingDiv.id = id;
         typingDiv.className = 'message ai typing';
+        typingDiv.setAttribute('aria-label', 'AI is thinking');
         typingDiv.innerHTML = `
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+            <div class="dot" aria-hidden="true"></div>
+            <div class="dot" aria-hidden="true"></div>
+            <div class="dot" aria-hidden="true"></div>
             <span style="font-size: 0.7rem; color: #999; margin-left: 10px;">Thinking & Searching...</span>
         `;
         this.chatMessages.appendChild(typingDiv);
@@ -250,14 +389,26 @@ class Gemini {
     }
 
     /**
-     * Removes the typing indicator.
+     * Removes the typing indicator from the chat.
+     * @param {string} id - ID of the typing indicator element.
+     * @private
      */
-    removeTyping(id) {
+    _removeTyping(id) {
         const el = document.getElementById(id);
         if (el) el.remove();
     }
-}
 
+    /**
+     * Clears all chat history from localStorage and UI.
+     */
+    clearHistory() {
+        this.history = [];
+        localStorage.removeItem(HISTORY_STORAGE_KEY);
+        if (this.chatMessages) {
+            this.chatMessages.innerHTML = '<div class="message ai">Namaste! I am your VoteWise AI assistant. How can I help you today?</div>';
+        }
+    }
+}
 
 export const gemini = new Gemini();
 export default gemini;

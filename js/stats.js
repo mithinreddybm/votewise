@@ -1,13 +1,27 @@
 /**
- * Election Stats component for VoteWise.
+ * @fileoverview Election Stats component for VoteWise.
  * Displays key metrics and historical data for Indian General Elections.
+ * @module stats
+ */
+
+'use strict';
+
+/**
+ * Election Stats class.
  */
 class ElectionStats {
+    /**
+     * Creates a new ElectionStats instance with metrics and history.
+     */
     constructor() {
+        /** @type {HTMLElement} Container for metrics grid */
         this.statsContainer = document.getElementById('election-stats-grid');
+        /** @type {HTMLElement} Container for parties grid */
         this.partiesContainer = document.getElementById('parties-grid');
+        /** @type {HTMLElement} Container for history timeline */
         this.timelineContainer = document.getElementById('history-timeline');
 
+        /** @type {Array<Object>} Key election metrics */
         this.metrics = [
             { label: "Total Lok Sabha Seats", value: "543", icon: "fa-chair", color: "var(--color-navy)" },
             { label: "Total Candidates (2024)", value: "8,360", icon: "fa-users", color: "var(--color-saffron)" },
@@ -15,6 +29,7 @@ class ElectionStats {
             { label: "Voter Turnout (2024)", value: "66.14%", icon: "fa-vote-yea", color: "var(--color-navy)" }
         ];
 
+        /** @type {Array<Object>} Major party details */
         this.parties = [
             { name: "BJP", alliance: "NDA", seats: 240, symbol: "Lotus", color: "#FF9933" },
             { name: "INC", alliance: "INDIA", seats: 99, symbol: "Hand", color: "#0000FF" },
@@ -25,6 +40,7 @@ class ElectionStats {
             { name: "JD(U)", alliance: "NDA", seats: 12, symbol: "Arrow", color: "#008000" }
         ];
 
+        /** @type {Array<Object>} Historical election data */
         this.history = [
             { year: "2014", term: "16th Lok Sabha", winner: "NDA", pm: "Narendra Modi" },
             { year: "2019", term: "17th Lok Sabha", winner: "NDA", pm: "Narendra Modi" },
@@ -37,58 +53,113 @@ class ElectionStats {
      * Initializes the stats sections.
      */
     init() {
-        this.renderMetrics();
-        this.renderParties();
-        this.renderHistory();
+        this._renderMetrics();
+        this._renderParties();
+        this._renderHistory();
     }
 
     /**
-     * Renders key election metrics.
+     * Renders key election metrics using safe DOM methods.
+     * @private
      */
-    renderMetrics() {
+    _renderMetrics() {
         if (!this.statsContainer) return;
-        this.statsContainer.innerHTML = this.metrics.map(m => `
-            <div class="stat-card">
-                <i class="fas ${m.icon}" style="color: ${m.color}; font-size: 2rem; margin-bottom: 15px;"></i>
-                <div class="stat-value">${m.value}</div>
-                <div class="stat-label">${m.label}</div>
-            </div>
-        `).join('');
+        this.statsContainer.innerHTML = '';
+        
+        this.metrics.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'stat-card';
+            card.setAttribute('role', 'listitem');
+            
+            const icon = document.createElement('i');
+            icon.className = `fas ${m.icon}`;
+            icon.style.cssText = `color: ${m.color}; font-size: 2rem; margin-bottom: 15px;`;
+            icon.setAttribute('aria-hidden', 'true');
+
+            const val = document.createElement('div');
+            val.className = 'stat-value';
+            val.textContent = m.value;
+
+            const label = document.createElement('div');
+            label.className = 'stat-label';
+            label.textContent = m.label;
+
+            card.append(icon, val, label);
+            this.statsContainer.appendChild(card);
+        });
     }
 
     /**
-     * Renders party details.
+     * Renders party details using safe DOM methods.
+     * @private
      */
-    renderParties() {
+    _renderParties() {
         if (!this.partiesContainer) return;
-        this.partiesContainer.innerHTML = this.parties.map(p => `
-            <div class="party-card" style="border-left: 5px solid ${p.color}">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <strong>${p.name}</strong>
-                    <span class="badge ${p.alliance === 'NDA' ? 'badge-saffron' : 'badge-navy'}">${p.alliance}</span>
-                </div>
-                <div style="font-size: 0.9rem; margin-top: 10px;">
-                    Seats: <span style="font-weight: 700;">${p.seats}</span>
-                </div>
-                <div style="font-size: 0.8rem; color: #666;">Symbol: ${p.symbol}</div>
-            </div>
-        `).join('');
+        this.partiesContainer.innerHTML = '';
+
+        this.parties.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'party-card';
+            card.style.borderLeft = `5px solid ${p.color}`;
+            card.setAttribute('role', 'listitem');
+
+            const header = document.createElement('div');
+            header.style.cssText = 'display: flex; justify-content: space-between; align-items: center;';
+            
+            const name = document.createElement('strong');
+            name.textContent = p.name;
+            
+            const badge = document.createElement('span');
+            badge.className = `badge ${p.alliance === 'NDA' ? 'badge-saffron' : 'badge-navy'}`;
+            badge.textContent = p.alliance;
+            
+            header.append(name, badge);
+
+            const seats = document.createElement('div');
+            seats.style.cssText = 'font-size: 0.9rem; margin-top: 10px;';
+            seats.innerHTML = `Seats: <span style="font-weight: 700;">${p.seats}</span>`;
+
+            const symbol = document.createElement('div');
+            symbol.style.cssText = 'font-size: 0.8rem; color: #666;';
+            symbol.textContent = `Symbol: ${p.symbol}`;
+
+            card.append(header, seats, symbol);
+            this.partiesContainer.appendChild(card);
+        });
     }
 
     /**
-     * Renders election history.
+     * Renders election history using safe DOM methods.
+     * @private
      */
-    renderHistory() {
+    _renderHistory() {
         if (!this.timelineContainer) return;
-        this.timelineContainer.innerHTML = this.history.map(h => `
-            <div class="history-item">
-                <div class="history-year">${h.year}</div>
-                <div class="history-details">
-                    <strong>${h.term}</strong><br>
-                    <small>Result: ${h.winner} | PM: ${h.pm}</small>
-                </div>
-            </div>
-        `).join('');
+        this.timelineContainer.innerHTML = '';
+
+        this.history.forEach(h => {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.setAttribute('role', 'listitem');
+
+            const year = document.createElement('div');
+            year.className = 'history-year';
+            year.textContent = h.year;
+
+            const details = document.createElement('div');
+            details.className = 'history-details';
+            
+            const term = document.createElement('strong');
+            term.textContent = h.term;
+            
+            const br = document.createElement('br');
+            
+            const summary = document.createElement('small');
+            summary.textContent = `Result: ${h.winner} | PM: ${h.pm}`;
+
+            details.append(term, br, summary);
+            item.append(year, details);
+            this.timelineContainer.appendChild(item);
+        });
     }
 }
 
