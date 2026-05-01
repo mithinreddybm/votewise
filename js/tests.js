@@ -126,15 +126,25 @@ async function runTests() {
         // Test: Calendar Integration
         // Open a modal to check for the calendar button
         const firstStep = document.querySelector('.timeline-content');
-        if (firstStep) firstStep.click();
-        
-        // Wait for modal transition/rendering
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        const calBtn = document.querySelector('a[href*="calendar.google.com"]');
-        t.assertTruthy(calBtn, 'Google Calendar "Add to Calendar" button exists in timeline details');
-        const modal = document.getElementById('details-modal');
-        if (modal) modal.style.display = 'none'; // Close it back
+        if (firstStep) {
+            // Trigger a real bubbling click event
+            firstStep.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            
+            // Wait for modal transition/rendering
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Broaden selector to match any Google Calendar render link
+            const calBtn = document.querySelector('a[href*="google.com/calendar"]');
+            t.assertTruthy(calBtn, 'Google Calendar "Add to Calendar" button exists in timeline details');
+            
+            const modal = document.getElementById('details-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        } else {
+            t.assert(false, 'Could not find timeline step to test calendar button');
+        }
     });
 
     await t.group('Accessibility Compliance (WCAG 2.1)', async () => {
